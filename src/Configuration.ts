@@ -1,58 +1,58 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
-import WebpackAliasSearcher from './WebpackAliasSearcher';
+
+interface ConfigurationValues {
+  aliases?: {
+    [key: string]: string;
+  };
+  homeDirectory?: string;
+  workspaceFolderPath?: string;
+  workspaceRootPath?: string;
+}
 
 export default class Configuration {
-  private _workspaceDir: string;
-  private _configuration: vscode.WorkspaceConfiguration;
+  readonly data: ConfigurationValues;
+  private _codeConfiguration: vscode.WorkspaceConfiguration;
   private _listenConfigChangeDispose: { dispose(): any };
-  private _webpackAliasSearcher: WebpackAliasSearcher;
+
   constructor() {
-    this._workspaceDir = vscode.workspace.rootPath;
-    this._syncConfiguration();
+    this.data = {};
+    this.update();
+
     this._listenConfigChange();
-    if (!Object.keys(this.alias).length) {
-      // 不存在 alias 时, 走自动寻找 alias 策略
-      this._webpackAliasSearcher = new WebpackAliasSearcher(this._workspaceDir);
-      let alias = this._webpackAliasSearcher.getDefaultAlias();
-      this.alias = { ...this.alias, ...alias };
+  }
+
+  update(fileUri?: vscode.Uri) {
+    this._codeConfiguration = vscode.workspace.getConfiguration('vs-alias-jump', fileUri || null);
+
+    this.data.aliases = this._codeConfiguration.get('alias');
+    this.data.homeDirectory = process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
+
+    const workspaceRootFolder = vscode.workspace.workspaceFolders
+      ? vscode.workspace.workspaceFolders[0]
+      : null;
+    let workspaceFolder = workspaceRootFolder;
+
+    if (fileUri) {
+      workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri);
+    }
+
+    this.data.workspaceFolderPath = workspaceFolder && workspaceFolder.uri.fsPath;
+    this.data.workspaceRootPath = workspaceRootFolder && workspaceRootFolder.uri.fsPath;
+  }
+
+  updateAliases(aliases, cleanAll = false) {
+    if (aliases && Object.keys(aliases).length) {
+      const data = cleanAll ? aliases : Object.assign(this.data.aliases, aliases);
+      this._codeConfiguration.update('aliases', data);
     }
   }
 
-  private _syncConfiguration() {
-    let oldWebpeckConfigPath: string;
-    if (this._configuration) {
-      oldWebpeckConfigPath = this._configuration.get('webpeckConfigPath');
-    }
-    this._configuration = vscode.workspace.getConfiguration('jumpToAliasFile', vscode.Uri.file(this._workspaceDir));
-    let newWebpeckConfigPath: string = this._configuration.get('webpeckConfigPath');
-    if (newWebpeckConfigPath && newWebpeckConfigPath !== oldWebpeckConfigPath) {
-      // webpeckConfigPath 发生了变化, 读取 webpackConfig 文件中的 alias, 设置到 alias 中
-      this._syncWebpeckConfigAlias(newWebpeckConfigPath);
-    }
-  }
   private _listenConfigChange() {
-    this._listenConfigChangeDispose = vscode.workspace.onDidChangeConfiguration(this._syncConfiguration.bind(this));
+    this._listenConfigChangeDispose = vscode.workspace.onDidChangeConfiguration(
+      this.update.bind(this)
+    );
   }
-  private _syncWebpeckConfigAlias(webpeckConfigPath: string) {
-    let webpackConfig: any;
-    try {
-      webpackConfig = require(path.join(this._workspaceDir, webpeckConfigPath));
-    } catch (error) {
 
-    }
-    if (webpackConfig && webpackConfig.resolve && webpackConfig.resolve.alias && typeof webpackConfig.resolve.alias === 'object') {
-      this.alias = { ...this.alias, ...webpackConfig.resolve.alias };
-    }
-  }
-  get alias() {
-    return this._configuration.get('alias') || {};
-  }
-  set alias(alias) {
-    if (alias && Object.keys(alias).length) {
-      this._configuration.update('alias', alias);
-    }
-  }
   dispose() {
     this._listenConfigChangeDispose.dispose();
   }

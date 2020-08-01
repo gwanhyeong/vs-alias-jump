@@ -1,22 +1,22 @@
 {
-  "name": "jump-to-alias-file",
-  "displayName": "Jump To Alias File",
-  "version": "1.0.9",
-  "publisher": "wanfu",
+  "name": "vs-alias-jump",
+  "displayName": "vs-alias-jump",
+  "version": "1.0.0",
+  "description": "support jump to ailas (with custom alias file)",
+  "publisher": "wudy",
   "engines": {
     "vscode": "^1.18.0"
   },
   "icon": "favicon.ico",
   "repository": {
     "type": "git",
-    "url": "https://github.com/wanfu920/jumpToAliasFile"
+    "url": "https://github.com/wudys/vs-alias-jump"
   },
   "categories": [
     "Programming Languages"
   ],
   "keywords": [
     "go to definition",
-    "webpack alias",
     "jump to alias file",
     "jump"
   ],
@@ -33,27 +33,30 @@
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "jumpToAliasFile setting",
+      "title": "vs-alias-jump setting",
       "properties": {
-        "jumpToAliasFile.alias": {
+        "vs-alias-jump.alias": {
           "type": "object",
           "default": {},
           "scope": "resource",
-          "description": "同 webpack resolve.alias 配置"
+          "description": "aliasList"
         },
-        "jumpToAliasFile.webpeckConfigPath": {
+        "vs-alias-jump.aliasConfigPath": {
           "type": "string",
           "default": "",
           "scope": "resource",
-          "description": "webpack config 路径"
+          "description": "aliasConfigPath"
         }
       }
     }
   },
   "devDependencies": {
     "@types/node": "^6.0.40",
+    "prettier": "^2.0.5",
     "tslint": "^5.11.0",
-    "typescript": "^2.1.4",
     "vscode": "^1.1.17"
+  },
+  "dependencies": {
+    "typescript": "^3.9.7"
   }
 }

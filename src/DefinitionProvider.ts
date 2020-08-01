@@ -1,55 +1,84 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import Configuration from './Configuration';
-import { fixFilePathExtension, extractImportPathFromTextLine, getFileZeroLocationFromFilePath } from './util';
+import {
+  fixFilePathExtension,
+  extractImportPathFromTextLine,
+  getFileZeroLocationFromFilePath
+} from './util';
 
 export default class DefinitionProvider implements vscode.DefinitionProvider {
-  constructor(private readonly _configuration: Configuration) {
-  }
-  provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Definition> {
+  constructor(private readonly _configuration: Configuration) {}
+
+  provideDefinition(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token: vscode.CancellationToken
+  ): vscode.ProviderResult<vscode.Definition> {
+    this._configuration.update(document.uri);
     return this._getFileRealPosition(document, position);
   }
+
   private _needJump(document: vscode.TextDocument, filePath: string): boolean {
-    if (filePath.startsWith('.') && (
-      /\.(less|scss|sass)$/.test(filePath) ||
-      document.fileName.endsWith('.vue')
-    )) return true;
+    if (
+      filePath.startsWith('.') &&
+      (/\.(less|scss|sass)$/.test(filePath) || document.fileName.endsWith('.vue'))
+    )
+      return true;
     return false;
   }
+
   private async _getFileRealPosition(document: vscode.TextDocument, position: vscode.Position) {
-    const textLine = document.lineAt(position)
+    const textLine = document.lineAt(position);
     const pathObj = extractImportPathFromTextLine(textLine);
 
     let realFilePath: string;
     if (pathObj && pathObj.range.contains(position)) {
       realFilePath = this._tranformAliasPath(pathObj.path);
 
-      // 由于 vscode 不能正确识别 vue 文件的正常导入, 所以此处添加对 vue 文件的正常引入支持
-      // 由于 vscode 不能正确识别 less scss sass 文件的导入, 添加支持
       if (!realFilePath && this._needJump(document, pathObj.path)) {
         realFilePath = path.resolve(document.fileName, '../', pathObj.path);
       }
     }
 
     if (realFilePath) {
-      realFilePath = await fixFilePathExtension(realFilePath)
+      realFilePath = await fixFilePathExtension(realFilePath);
     }
-    if (realFilePath) {
-      return getFileZeroLocationFromFilePath(realFilePath)
-    };
-  }
-  private _tranformAliasPath(aliasPath: string) {
-    let alias = this._configuration.alias;
 
-    let aliasArr = aliasPath.split('/')
-    for (let key of Object.keys(alias)) {
-      if (key === aliasArr[0]) {
-        let value = alias[key];
-        if (!value.endsWith('/')) {
-          value += '/';
-        }
-        return aliasPath.replace(key + '/', value);
-      }
+    if (realFilePath) {
+      return getFileZeroLocationFromFilePath(realFilePath);
     }
+  }
+
+  private _tranformAliasPath(insertedPath: string) {
+    const {
+      workspaceRootPath,
+      workspaceFolderPath,
+      homeDirectory,
+      aliases
+    } = this._configuration.data;
+
+    let aliasPath = insertedPath;
+    const isFound = Object.keys(aliases || {}).some((key: string) => {
+      if (aliasPath.startsWith(key)) {
+        aliasPath = aliasPath.replace(key, aliases[key]);
+        return true;
+      }
+    });
+
+    if (isFound && workspaceRootPath) {
+      aliasPath = aliasPath.replace('${workspace}', workspaceRootPath);
+    }
+
+    if (isFound && workspaceFolderPath) {
+      aliasPath = aliasPath.replace('${folder}', workspaceFolderPath);
+    }
+
+    if (isFound && homeDirectory) {
+      aliasPath = aliasPath.replace('${home}', homeDirectory);
+    }
+
+    // alias was not found, use the raw path inserted by user
+    return isFound ? aliasPath : insertedPath;
   }
 }
