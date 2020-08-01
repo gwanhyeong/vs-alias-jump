@@ -90,8 +90,7 @@ export function extractImportPathFromTextLine(
 }
 
 export function getFileZeroLocationFromFilePath(filePath: string) {
-  let uri = vscode.Uri.file(filePath);
-  let range = new vscode.Range(0, 0, 0, 0);
-  let location = new vscode.Location(uri, range);
-  return location;
+  const uri = vscode.Uri.file(filePath);
+  const position = new vscode.Position(0, 0);
+  return new vscode.Location(uri, position);
 }

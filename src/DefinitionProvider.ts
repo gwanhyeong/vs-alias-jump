@@ -23,8 +23,10 @@ export default class DefinitionProvider implements vscode.DefinitionProvider {
     if (
       filePath.startsWith('.') &&
       (/\.(less|scss|sass)$/.test(filePath) || document.fileName.endsWith('.vue'))
-    )
+    ) {
       return true;
+    }
+
     return false;
   }
 
