@@ -2,7 +2,7 @@
   "name": "vs-alias-jump",
   "displayName": "vs-alias-jump",
   "description": "support jump to ailas",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "wudy",
   "engines": {
     "vscode": "^1.18.0"
@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/wudys/vs-alias-jump",
   "categories": [
-    "Programming Languages"
+    "Other"
   ],
   "keywords": [
     "go to definition",
