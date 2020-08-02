@@ -1,22 +1,27 @@
 {
   "name": "vs-alias-jump",
   "displayName": "vs-alias-jump",
+  "description": "support jump to ailas",
   "version": "1.0.0",
-  "description": "support jump to ailas (with custom alias file)",
   "publisher": "wudy",
   "engines": {
     "vscode": "^1.18.0"
   },
-  "icon": "favicon.ico",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/wudys/vs-alias-jump"
   },
+  "bugs": {
+    "url": "https://github.com/wudys/vs-alias-jump/issues"
+  },
+  "homepage": "https://github.com/wudys/vs-alias-jump",
   "categories": [
     "Programming Languages"
   ],
   "keywords": [
     "go to definition",
+    "alias jump",
     "jump to alias file",
     "jump"
   ],
@@ -39,13 +44,7 @@
           "type": "object",
           "default": {},
           "scope": "resource",
-          "description": "aliasList"
-        },
-        "vs-alias-jump.aliasConfigPath": {
-          "type": "string",
-          "default": "",
-          "scope": "resource",
-          "description": "aliasConfigPath"
+          "description": "Defines alias for jump to file"
         }
       }
     }
@@ -54,9 +53,7 @@
     "@types/node": "^6.0.40",
     "prettier": "^2.0.5",
     "tslint": "^5.11.0",
+    "typescript": "^3.9.7",
     "vscode": "^1.1.17"
-  },
-  "dependencies": {
-    "typescript": "^3.9.7"
   }
 }
