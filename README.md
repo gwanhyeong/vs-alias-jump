@@ -4,7 +4,7 @@
 
 ![preview](preview.gif)
 
-This project forked from [this project](https://github.com/wanfu920/jumpToAliasFile).
+This project forked from [here](https://github.com/wanfu920/jumpToAliasFile).
 
 It looks similar, but it's different.
 
@@ -15,7 +15,7 @@ It looks similar, but it's different.
 
 ## Install
 
-- You can install it from the marketplace.
+- You can install it from the [marketplace](https://marketplace.visualstudio.com/items?itemName=wudy.vs-alias-jump).
 - or `Ctrl+Shift+P` + `ext install vs-alias-jump`
 
 ## Options
